@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Чистая голова — система полного контроля над временем</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #111111;
+    --bg3: #161616;
+    --card: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #c8a96e;
+    --accent2: #e8c98e;
+    --text: #f0ece4;
+    --muted: #888880;
+    --green: #4caf82;
+    --red: #d0604a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse at center, rgba(200, 169, 110, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 7vw, 68px);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto 48px;
+    line-height: 1.65;
+  }
+
+  /* HERO IMAGE */
+  .hero-img {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 80px;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+
+  .hero-img img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .hero-img-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+    padding: 32px 24px 20px;
+    font-size: 13px;
+    color: rgba(240,236,228,0.7);
+    text-align: left;
+  }
+
+  /* PROSE */
+  .prose {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .prose p {
+    margin-bottom: 22px;
+    color: rgba(240,236,228,0.88);
+  }
+
+  .prose p strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 38px);
+    font-weight: 700;
+    margin: 72px 0 28px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .section-title.center {
+    text-align: center;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 48px 0 16px;
+    color: var(--accent2);
+  }
+
+  /* HIGHLIGHT BLOCK */
+  .highlight {
+    background: linear-gradient(135deg, rgba(200,169,110,0.1), rgba(200,169,110,0.04));
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 24px 28px;
+    margin: 36px 0;
+    font-size: 16px;
+    color: var(--text);
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    line-height: 1.6;
+  }
+
+  /* INLINE IMAGES */
+  .inline-img {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 40px 0;
+    border: 1px solid var(--border);
+  }
+
+  .inline-img img {
+    width: 100%;
+    display: block;
+  }
+
+  .img-caption {
+    padding: 14px 18px;
+    background: var(--card);
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* MYTHS SECTION */
+  .myths-grid {
+    display: grid;
+    gap: 20px;
+    margin: 40px 0;
+  }
+
+  .myth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .myth-card::before {
+    content: attr(data-num);
+    position: absolute;
+    top: -10px; right: 20px;
+    font-family: 'Playfair Display', serif;
+    font-size: 80px;
+    font-weight: 900;
+    color: rgba(200,169,110,0.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .myth-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .myth-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  .myth-text {
+    color: rgba(240,236,228,0.75);
+    font-size: 15px;
+  }
+
+  /* DAY SECTION */
+  .day-section {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 48px 0;
+  }
+
+  .time-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .time-item:last-child { border-bottom: none; }
+
+  .time-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 50px;
+    padding-top: 2px;
+    font-family: 'Manrope', monospace;
+  }
+
+  .time-desc {
+    font-size: 15px;
+    color: rgba(240,236,228,0.82);
+  }
+
+  /* PRINCIPLE BOX */
+  .principle-box {
+    background: linear-gradient(135deg, rgba(200,169,110,0.12), rgba(200,169,110,0.03));
+    border: 1px solid rgba(200,169,110,0.25);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 48px 0;
+    text-align: center;
+  }
+
+  .principle-box .big-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .principle-box p {
+    font-size: 15px;
+    color: rgba(240,236,228,0.75);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* STEPS */
+  .steps {
+    margin: 48px 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 40px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    min-width: 48px;
+    height: 48px;
+    background: var(--accent);
+    color: #0d0d0d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .step-content h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .step-content p {
+    font-size: 15px;
+    color: rgba(240,236,228,0.78);
+    margin-bottom: 0;
+  }
+
+  /* TESTIMONIALS */
+  .testimonials {
+    display: grid;
+    gap: 20px;
+    margin: 40px 0;
+  }
+
+  .testimonial {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+  }
+
+  .testimonial-text {
+    font-style: italic;
+    font-size: 15px;
+    color: rgba(240,236,228,0.85);
+    margin-bottom: 16px;
+    line-height: 1.65;
+  }
+
+  .testimonial-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  /* SURVEY IMG */
+  .survey-block {
+    margin: 40px 0;
+  }
+
+  /* WHAT'S INSIDE */
+  .inside-grid {
+    display: grid;
+    gap: 16px;
+    margin: 32px 0;
+  }
+
+  .inside-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+
+  .inside-icon {
+    font-size: 20px;
+    min-width: 32px;
+    padding-top: 2px;
+  }
+
+  .inside-title {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .inside-desc {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* PRICING TABLE */
+  .pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 32px 0;
+    font-size: 15px;
+  }
+
+  .pricing-table th {
+    text-align: left;
+    padding: 14px 18px;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pricing-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(42,42,42,0.5);
+    color: rgba(240,236,228,0.82);
+    vertical-align: top;
+  }
+
+  .pricing-table td:last-child {
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .pricing-table tr.bonus td {
+    color: var(--green);
+  }
+
+  .pricing-table tr.bonus td:last-child {
+    color: var(--green);
+  }
+
+  .pricing-table tr.total-row td {
+    color: var(--text);
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+    border-bottom: none;
+    padding-top: 20px;
+  }
+
+  /* CTA BLOCK */
+  .cta-block {
+    background: linear-gradient(135deg, #1e1a12, #0f0f0f);
+    border: 1px solid rgba(200,169,110,0.3);
+    border-radius: 24px;
+    padding: 56px 48px;
+    text-align: center;
+    margin: 56px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-block::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 300px;
+    background: radial-gradient(ellipse, rgba(200,169,110,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-price-old {
+    font-size: 16px;
+    color: var(--muted);
+    text-decoration: line-through;
+    margin-bottom: 8px;
+  }
+
+  .cta-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .cta-price span {
+    font-size: 28px;
+    vertical-align: super;
+  }
+
+  .cta-tagline {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 36px;
+  }
+
+  .btn-main {
+    display: inline-block;
+    background: var(--accent);
+    color: #0d0d0d;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 20px 52px;
+    border-radius: 100px;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-main:hover {
+    background: var(--accent2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(200,169,110,0.3);
+  }
+
+  .cta-guarantee {
+    margin-top: 28px;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .cta-guarantee::before {
+    content: '🛡';
+    font-size: 16px;
+  }
+
+  /* URGENCY */
+  .urgency-bar {
+    background: rgba(200,169,110,0.08);
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin: 32px 0;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .urgency-icon { font-size: 24px; }
+
+  .urgency-text {
+    font-size: 14px;
+    color: rgba(240,236,228,0.8);
+  }
+
+  .urgency-text strong {
+    color: var(--accent);
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 56px 0;
+  }
+
+  /* PAIN SECTION */
+  .pain-list {
+    list-style: none;
+    margin: 28px 0;
+  }
+
+  .pain-list li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(42,42,42,0.5);
+    font-size: 15px;
+    color: rgba(240,236,228,0.78);
+  }
+
+  .pain-list li::before {
+    content: '—';
+    color: var(--muted);
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+
+  /* RECOGNITION BLOCK */
+  .recognition-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 48px 0;
+  }
+
+  .recognition-block .lead {
+    font-family: 'Playfair Display', serif;
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 80px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up {
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  .delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .delay-2 { animation-delay: 0.25s; opacity: 0; }
+  .delay-3 { animation-delay: 0.4s; opacity: 0; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .cta-block { padding: 36px 24px; }
+    .cta-price { font-size: 56px; }
+    .step { flex-direction: row; }
+    .day-section { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow fade-up">10 лет практики · система · TickTick</div>
+    <h1 class="fade-up delay-1">Я живу по графику<br><em>10 лет.</em></h1>
+    <p class="hero-sub fade-up delay-2">Как выстроить систему, которая освобождает 2+ часа в день, убирает фоновую тревожность и даёт полный контроль над временем — за один вечер настройки. Без силы воли. Без сложных методологий.</p>
+  </section>
+
+  <div class="hero-img fade-up delay-3">
+    <img src="Screenshot_1.png" alt="Работа в кофейне ранним утром с открытым графиком TickTick">
+    <div class="hero-img-caption">Раннее утро. Кофе. Открытый график. Полный контроль над днём.</div>
+  </div>
+
+  <!-- INTRO PROSE -->
+  <div class="prose">
+    <p>Вы знаете, что вам нужно делать. Вы понимаете это. Вы даже можете составить план.</p>
+    <p>Но начать — не можете.</p>
+    <p>Это не лень. Это разрыв между знанием и действием — и он знаком практически каждому. Вы открываете список задач, видите 15 пунктов — и вместо того чтобы взяться за первый, ложитесь на кровать и открываете телефон.</p>
+    <p>Я знаю это чувство. Я прошёл через него. И вот что я понял за 10 лет жизни по графику: проблема не в вашей силе воли. И не в мотивации. Проблема — в отсутствии системы, которая берёт хаос в вашей голове и превращает его в наглядную картину, где каждая задача имеет своё место и время.</p>
+    <p>Если вы спросите меня, что я делал в любую минуту за последние 10 лет — я открою телефон и скажу. С точностью до минуты. Не потому что у меня феноменальная память. А потому что каждый день, начиная ещё с последних классов школы, моя жизнь ложится на график.</p>
+  </div>
+
+  <div class="inline-img">
+    <img src="Screenshot_2.jpg" alt="Apple Calendar — архив расписания за прошлые годы">
+    <div class="img-caption">Apple Calendar, 2018–2019. Вот они — реальные 10 лет.</div>
+  </div>
+
+  <div class="prose">
+    <p>Звучит как тюрьма, правда? Я слышу это постоянно. «Это же надо быть роботом, чтобы так жить». «Это убивает спонтанность». Забавно. Потому что правда — ровно наоборот.</p>
+    <p>Я параллельно развиваю два бизнес-проекта, веду блог, создаю контент, снимаю и монтирую видео, тренируюсь почти каждый день. И при этом ложусь спать с ощущением, что ничего не забыл, ничего не упустил, и день прожит не зря.</p>
+    <p><strong>Не потому что я какой-то сверхчеловек. А потому что у меня есть система.</strong></p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- WHY PLAN -->
+  <h2 class="section-title">Зачем вообще планировать</h2>
+  <div class="prose">
+    <p>На людей никогда не обрушивалось столько информации, как сегодня. Объём растёт в геометрической прогрессии. Задачи, проекты, идеи, сообщения, дедлайны, встречи, звонки.</p>
+    <p>Никогда раньше не было столько разговоров о тревожности, выгорании, подавленности. Один вывод: большинство людей никак не организовывают свою жизнь. Не фильтруют. Не структурируют.</p>
+    <p>Представьте сито. Весь этот безумный объём информации, знаний, задач, идей — проходит через сито, фильтруется, упорядочивается и раскладывается в нужном виде. <strong>Планирование и тайм-менеджмент — это и есть такое сито.</strong></p>
+    <p>Без него всё сваливается в одну кучу. Мозг пытается удержать всё одновременно — и перегревается. Отсюда тревога. Возникает цикл: перегрузка → стыд → непоследовательность → ещё больше стыда.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- MYTHS -->
+  <h2 class="section-title">Три мифа, которые мешают начать</h2>
+
+  <div class="myths-grid">
+    <div class="myth-card" data-num="1">
+      <div class="myth-label">Миф первый</div>
+      <div class="myth-title">«Планирование подходит не всем»</div>
+      <p class="myth-text">Мы все разные — но форматы планирования тоже разные. Для каждого система может быть адаптирована. Базовый принцип прост: любая упорядоченная система всегда эффективнее хаоса. Нет ни одного дела в мире, которое работает лучше в хаосе, чем в порядке.</p>
+    </div>
+    <div class="myth-card" data-num="2">
+      <div class="myth-label">Миф второй</div>
+      <div class="myth-title">«Нужно быть роботом»</div>
+      <p class="myth-text">«Запланировал день — и теперь следуй строго». Это самое вредное заблуждение. План — это не контракт, высеченный в камне. План — это гибкий инструмент, который нужно постоянно менять в процессе. Хороший план тот, который постоянно корректируется, подстраиваясь под реальность.</p>
+    </div>
+    <div class="myth-card" data-num="3">
+      <div class="myth-label">Миф третий</div>
+      <div class="myth-title">«Планирование ограничивает свободу»</div>
+      <p class="myth-text">Всё наоборот. Чем более дисциплинированно вы живёте по графику, тем более вы свободны. Чем измеряется свобода? Тем, насколько часто вы поступаете так, как действительно хотите — не так, как диктуют эмоции в моменте.</p>
+    </div>
+  </div>
+
+  <div class="highlight">«Корабль безопаснее всего, когда стоит в порту. Но не для этого он был построен.»</div>
+
+  <div class="divider"></div>
+
+  <!-- ONE DAY -->
+  <h2 class="section-title">Один день из моей жизни</h2>
+  <div class="prose">
+    <p>Чтобы вы увидели, как это работает не в теории — покажу обычный день. Без прикрас.</p>
+  </div>
+
+  <div class="day-section">
+    <div class="time-item">
+      <div class="time-label">5:30</div>
+      <div class="time-desc">Будильник. Раньше нажимал «отложить» по четыре раза. Сейчас — ноги на полу через несколько секунд. Не потому что стал другим человеком. А потому что в графике стоят конкретные задачи, и есть ясность, с чего начать.</div>
+    </div>
+    <div class="time-item">
+      <div class="time-label">Утро</div>
+      <div class="time-desc">Завтрак в кафе, когда тихо и спокойно. Утренний разбор входящих: почта, мессенджеры, метрики по всем проектам за вчера. Пять минут — и полная картина.</div>
+    </div>
+    <div class="time-item">
+      <div class="time-label">Далее</div>
+      <div class="time-desc">Съёмка. Потом чтение — я перенёс его на утро, потому что вечером до него часто не доходили руки. Сейчас 45 минут с книгой — стабильно каждое утро.</div>
+    </div>
+    <div class="time-item">
+      <div class="time-label">Офис</div>
+      <div class="time-desc">Кофейня — мой основной «офис». Три с половиной часа полного фокуса за ноутбуком. Включённый помодоро-таймер в TickTick. Ни одного отвлечения. Рилс смонтирован с нуля, шорт залит, фото опубликованы.</div>
+    </div>
+    <div class="time-item">
+      <div class="time-label">Вечер</div>
+      <div class="time-desc">Открываю график. Забитый. Полностью закрытый. Вижу объём сделанного. Осознаю его. Нет пустых зон. Нет ощущения «день прошёл — а что я сделал?» Ложусь спать с чувством выполненного долга.</div>
+    </div>
+  </div>
+
+  <div class="inline-img">
+    <img src="Screenshot_3.png" alt="Утренняя атмосфера в кафе — 5:30, тишина, завтрак, фокус">
+    <div class="img-caption">5:30 утра. Тишина. Фокус. Начало самого продуктивного блока дня.</div>
+  </div>
+
+  <div class="inline-img">
+    <img src="Screenshot_4.jpg" alt="TickTick — полностью закрытый день с галочками">
+    <div class="img-caption">Конец дня. Все задачи закрыты. Вот как выглядит чувство выполненного долга.</div>
+  </div>
+
+  <div class="prose">
+    <p>Всё утреннее планирование — раскидать задачи, определить приоритеты, скорректировать график — заняло <strong>15 минут</strong>. Потому что все задачи уже были в системе.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PRINCIPLE -->
+  <h2 class="section-title">Принцип, который меняет всё</h2>
+
+  <div class="prose">
+    <p>Среди экспертов по тайм-менеджменту я почти никогда не слышу акцент на одной вещи. Хотя это самое важное.</p>
+  </div>
+
+  <div class="principle-box">
+    <div class="big-text">Время неосязаемо.</div>
+    <p>Мы не чувствуем его ценность, потому что оно эфемерно. Час пролетел — не заметили. День закончился — непонятно, куда он ушёл. Чтобы ценность времени стала реальной — его нужно сделать наглядным.</p>
+  </div>
+
+  <div class="prose">
+    <p><strong>Главный принцип: календарный вид планирования.</strong> Не задачники. Не списки дел. Не доски. Календарь. Потому что в календаре вы видите свой таймлайн. Видите пустые окна и забитые блоки. Видите, где тратите время впустую.</p>
+    <p>Когда это становится привычкой, вы ощущаете время почти физически. Тратите его не туда — видите это. И чувствуете, что теряете что-то важное.</p>
+  </div>
+
+  <div class="inline-img">
+    <img src="Screenshot_5.jpg" alt="TickTick — недельный вид с задачами разных цветов">
+    <div class="img-caption">Недельный вид TickTick. Каждая сфера жизни — свой цвет. Баланс виден мгновенно.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- TICKTICK -->
+  <h2 class="section-title">Почему именно TickTick</h2>
+  <div class="prose">
+    <p>Я перепробовал всё. Apple Calendar, Google Calendar, Todoist, Trello, Asana, Notion. У каждого плюсы. Но ни один не решал задачу целиком. Проблема всегда одна: <strong>календарь отдельно, задачи отдельно.</strong></p>
+    <p>TickTick решил это. Задачник и календарь — разные виды отображения одного и того же. Задача в списке — она же в календаре. Единая система.</p>
+  </div>
+
+  <div class="inline-img">
+    <img src="Screenshot_6.jpg" alt="Быстрое добавление задачи — виджет на iPhone и окно на MacBook">
+    <div class="img-caption">Сбор задач в один клик — виджет на iPhone и горячая клавиша на MacBook. Три секунды, мозг свободен.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SYSTEM STEPS -->
+  <h2 class="section-title">Система по шагам</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h4>Определите ключевые сферы</h4>
+        <p>Сферы — это направления жизни, по которым вы планируете. У предпринимателя: бизнес, блог, спорт, личное. В TickTick каждая сфера — отдельный список со своим цветом. На графике мгновенно видно, сколько времени уходит на каждое направление.</p>
+      </div>
+    </div>
+
+    <div class="inline-img">
+      <img src="Screenshot_7.jpg" alt="TickTick — боковая панель со списками по сферам">
+      <div class="img-caption">Структура в TickTick: каждая сфера — список со своим цветом. Чистая, понятная иерархия.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h4>Зафиксируйте цели</h4>
+        <p>По каждой сфере — цели. Краткосрочные (1–3 месяца), среднесрочные (6–12), долгосрочные (1–5 лет). В TickTick — список «Цели» с видом таймлайна. Каждая задача в графике должна двигать к одной из целей.</p>
+      </div>
+    </div>
+
+    <div class="inline-img">
+      <img src="Screenshot_8.jpg" alt="TickTick — вид таймлайна с целями">
+      <div class="img-caption">Вид таймлайна для целей в TickTick. Наглядная дорожная карта.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h4>Оформите график</h4>
+        <p>Три вида задач: <strong>Повторяющиеся ежедневные</strong> — каркас дня, создаются один раз. <strong>Гибкие задачи</strong> — без привязки ко времени, висят сверху. <strong>Фиксированные события</strong> — встреча, созвон, рейс. Стоят жёстко — планируете остальное вокруг них.</p>
+      </div>
+    </div>
+
+    <div class="inline-img">
+      <img src="Screenshot_9.jpg" alt="TickTick — дневной вид с тремя типами задач">
+      <div class="img-caption">Три типа задач в одном календаре: гибкие (сверху), фиксированные и повторяющиеся (на таймлайне).</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h4>Координация — три режима</h4>
+        <p><strong>Еженедельно:</strong> 15–30 минут в воскресенье. Просмотреть цели, распланировать неделю. <strong>Ежедневно:</strong> 5 минут утром. Оценить день, скорректировать. <strong>Постоянно:</strong> непрерывное взаимодействие. Закончили задачу — отметили. Появилась новая — занесли.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RECOGNITION -->
+  <h2 class="section-title">Узнаёте себя?</h2>
+
+  <div class="recognition-block">
+    <div class="lead">Если дочитали до этого момента — скорее всего, вы знаете, каково это.</div>
+    <ul class="pain-list">
+      <li>Вы знаете, что нужно делать. Но не можете заставить себя начать.</li>
+      <li>Начинаете на подъёме — но через неделю бросаете. Понедельник — грандиозный план новой жизни. Среда — старые привычки.</li>
+      <li>Чувствуете, что тратите свой потенциал впустую. Все вокруг двигаются вперёд — а вы стоите на месте.</li>
+      <li>Можете посмотреть двухчасовой фильм не отрываясь — но не можете сфокусироваться на рабочей задаче 20 минут.</li>
+      <li>Список дел стал источником тревоги, а не облегчения. 50 пунктов, которые давят.</li>
+      <li>Перепробовали всё: Todoist, Notion, бумажные планеры. Настраивали два часа — и ни разу не открывали после.</li>
+    </ul>
+    <p style="margin-top: 24px; color: rgba(240,236,228,0.7); font-size: 15px;">Нет. Не ленивый. И не сломанный. Вы застряли в цикле, где нет наглядной картины времени. <strong style="color: var(--text)">Нужно — не сильнее. Нужно — по-другому.</strong></p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PRODUCT -->
+  <h2 class="section-title center">«Чистая голова»<br>система полного контроля над временем</h2>
+  <p style="text-align: center; color: var(--muted); margin-bottom: 48px; font-size: 15px;">Вся система — в компактном продукте. Без воды. Только конкретика.</p>
+
+  <!-- WHAT'S INSIDE -->
+  <div class="inside-grid">
+    <div class="inside-item">
+      <div class="inside-icon">📄</div>
+      <div>
+        <div class="inside-title">Статья-руководство</div>
+        <div class="inside-desc">Пошагово расписан весь процесс формирования системы. Теория + практика. Изучите перед уроками.</div>
+      </div>
+    </div>
+    <div class="inside-item">
+      <div class="inside-icon">🎬</div>
+      <div>
+        <div class="inside-title">Урок 1 — Вводная (20 мин)</div>
+        <div class="inside-desc">Почему календарные приложения наиболее эффективны. Все важные настройки.</div>
+      </div>
+    </div>
+    <div class="inside-item">
+      <div class="inside-icon">🎬</div>
+      <div>
+        <div class="inside-title">Урок 2 — Структура (30 мин)</div>
+        <div class="inside-desc">Виды задач. Работа со списками. Создание структуры. Расстановка целей. Вид таймлайна.</div>
+      </div>
+    </div>
+    <div class="inside-item">
+      <div class="inside-icon">🎬</div>
+      <div>
+        <div class="inside-title">Урок 3 — Календарь (40 мин)</div>
+        <div class="inside-desc">Работа с календарём. Каркас дня. Сбор входящих задач. Еженедельный трекинг и планирование.</div>
+      </div>
+    </div>
+    <div class="inside-item">
+      <div class="inside-icon">✨</div>
+      <div>
+        <div class="inside-title">+ 2 продвинутых урока</div>
+        <div class="inside-desc">По продвинутым функциям TickTick для опытных пользователей.</div>
+      </div>
+    </div>
+    <div class="inside-item" style="border-color: rgba(200,169,110,0.25); background: rgba(200,169,110,0.06);">
+      <div class="inside-icon">💬</div>
+      <div>
+        <div class="inside-title" style="color: var(--accent);">БОНУС: Личный доступ к автору</div>
+        <div class="inside-desc">Общий чат в Telegram. 300+ участников. Любой вопрос — подробный ответ лично от меня. Неограниченный доступ.</div>
+      </div>
+    </div>
+    <div class="inside-item" style="border-color: rgba(200,169,110,0.25); background: rgba(200,169,110,0.06);">
+      <div class="inside-icon">⚡</div>
+      <div>
+        <div class="inside-title" style="color: var(--accent);">БОНУС: «10 лет → 1 вечер»</div>
+        <div class="inside-desc">Готовая структура списков и графика, которую можно скопировать и адаптировать под себя за один вечер. Проверено на 300+ людях.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTIMONIALS -->
+  <h2 class="section-title">Что говорят участники</h2>
+
+  <div class="survey-block">
+    <div class="inline-img">
+      <img src="Screenshot_10.jpg" alt="Результаты анонимной анкеты — средний балл 9.7">
+      <div class="img-caption">337 respondents · April 2025 · Средний балл 9.7 / 10 · 96% рекомендуют</div>
+    </div>
+  </div>
+
+  <div class="inline-img">
+    <img src="Screenshot_11.jpg" alt="Отзывы участников из Telegram-чата">
+    <div class="img-caption">Реальные отзывы из Telegram-чата участников.</div>
+  </div>
+
+  <div class="testimonials">
+    <div class="testimonial">
+      <div class="testimonial-text">«Перепробовал Todoist, Notion, бумажные планеры — ничего не приживалось дольше недели. После этого продукта впервые за два года ложусь спать без ощущения, что что-то забыл. Система заработала с первого дня.»</div>
+      <div class="testimonial-name">Артём, предприниматель</div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-text">«Раньше: 15 задач в голове, хаос, тревога, откладываю всё на завтра. Сейчас: открываю график — вижу день. Делаю — отмечаю. За месяц закрыла проекты, которые висели полгода. Это не мотивация — это инструмент, который просто работает.»</div>
+      <div class="testimonial-name">Марина, фрилансер-дизайнер</div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-text">«Вёл два канала и работал на фрилансе. Всё смешивалось, постоянно что-то проваливал. Сейчас каждый проект — свой цвет в графике, всё видно. Стал успевать в полтора раза больше, хотя работаю столько же часов.»</div>
+      <div class="testimonial-name">Дима, блогер</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PRICING -->
+  <h2 class="section-title">Что вы получаете</h2>
+
+  <table class="pricing-table">
+    <thead>
+      <tr>
+        <th>Что входит</th>
+        <th>Ценность</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Статья-руководство: пошаговый процесс построения системы</td>
+        <td>$30</td>
+      </tr>
+      <tr>
+        <td>Урок 1: настройка и фундамент (20 мин)</td>
+        <td>$15</td>
+      </tr>
+      <tr>
+        <td>Урок 2: списки, цели, структура (30 мин)</td>
+        <td>$20</td>
+      </tr>
+      <tr>
+        <td>Урок 3: календарь, каркас дня, планирование (40 мин)</td>
+        <td>$25</td>
+      </tr>
+      <tr>
+        <td>2 продвинутых урока</td>
+        <td>$20</td>
+      </tr>
+      <tr class="bonus">
+        <td>БОНУС: Личный доступ к автору — чат в Telegram с личными ответами</td>
+        <td>$150</td>
+      </tr>
+      <tr class="bonus">
+        <td>БОНУС: «10 лет → 1 вечер» — готовая структура для копирования</td>
+        <td>$40</td>
+      </tr>
+      <tr class="total-row">
+        <td>Общая ценность</td>
+        <td>$300</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- URGENCY -->
+  <div class="urgency-bar">
+    <div class="urgency-icon">⏳</div>
+    <div class="urgency-text">Сейчас в Telegram-чате больше <strong>300 участников</strong>. При 500 набор закроется — не смогу отвечать каждому лично с тем же качеством. Если вы здесь — место ещё есть.</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <div class="cta-price-old">Общая ценность: $300</div>
+    <div class="cta-price"><span>$</span>25</div>
+    <div class="cta-tagline">Разница в 12 раз. Меньше ужина на одного в среднем ресторане.</div>
+    <a href="#" class="btn-main">Получить систему за $25 →</a>
+    <div class="cta-guarantee">Гарантия возврата 14 дней — без вопросов и без обид</div>
+  </div>
+
+  <div class="prose" style="margin-bottom: 48px;">
+    <p style="text-align: center; color: var(--muted); font-size: 15px;">Подходите постепенно. Внедряйте step by step. Не пытайтесь сделать всё за один день. Система начнёт работать, как только вы дадите ей шанс.</p>
+  </div>
+
+</div>
+
+<footer>
+  <p>Остались вопросы? Напишите в Telegram — отвечу лично.</p>
+</footer>
+
+<script>
+  // Intersection Observer for fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        entry.target.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.inline-img, .myth-card, .step, .inside-item, .testimonial, .day-section, .principle-box, .recognition-block').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
